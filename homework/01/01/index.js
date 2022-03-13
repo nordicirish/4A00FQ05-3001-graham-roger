@@ -43,5 +43,7 @@ console.log("animals includes " + animal2 + " : " + animals.includes(animal2));
 // It doesn't modify the array.
 
 console.log(animal1 + " is found : " + animals.some(returnItem, animal1));
+// returns true
 
 console.log(animal2 + " is found : " + animals.some(returnItem, animal2));
+// returns false
