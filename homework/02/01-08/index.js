@@ -1,5 +1,7 @@
 const mysql = require("mysql");
 require("dotenv").config();
+let readlineSync = require("readline-sync");
+
 const dbConnection = process.env;
 // add "node":true to eslint.json if process is not defined error
 // db connection details stored in .env ..read using dotenv module
@@ -13,7 +15,29 @@ const connection = mysql.createConnection({
   multipleStatements: true,
 });
 
-connection.connect();
+function searchId() {
+  let locationId = readlineSync.question("May I have an ID ? ");
+  connection.connect();
+  connection.query(
+    "SELECT * FROM locations WHERE id = " + locationId,
+    (err, locations) => {
+      if (err) {
+        throw err;
+      }
+      locations.forEach((location) =>
+        console.log(
+          `ID: ${location.id} Latitude: ${location.latitude} Longtitude: ${location.longtitude}`
+        )
+      );
+    }
+  );
+
+  connection.end();
+}
+
+searchId();
+
+/* connection.connect();
 
 connection.query("select * from locations", (err, locations) => {
   if (err) {
@@ -26,5 +50,6 @@ connection.query("select * from locations", (err, locations) => {
   );
 });
 
+connection.end(); */
+
 // will wait if previously enqueued queriest
-connection.end();
