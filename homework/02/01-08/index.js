@@ -1,4 +1,5 @@
 const mysql = require("mysql");
+// .env
 require("dotenv").config();
 let readlineSync = require("readline-sync");
 
@@ -17,20 +18,17 @@ const connection = mysql.createConnection({
 
 function searchId() {
   let locationId = readlineSync.question("May I have an ID ? ");
+  let sql = `SELECT * FROM locations WHERE id = ${locationId}`;
   connection.connect();
-  connection.query(
-    "SELECT * FROM locations WHERE id = " + locationId,
-    (err, locations) => {
-      if (err) {
-        throw err;
-      }
-      locations.forEach((location) =>
-        console.log(
-          `ID: ${location.id} Latitude: ${location.latitude} Longtitude: ${location.longtitude}`
-        )
-      );
+  connection.query(sql, (err, location) => {
+    if (err) {
+      throw err;
     }
-  );
+
+    console.log(
+      `ID: ${location.id} Latitude: ${location.latitude} Longtitude: ${location.longtitude}`
+    );
+  });
 
   connection.end();
 }
