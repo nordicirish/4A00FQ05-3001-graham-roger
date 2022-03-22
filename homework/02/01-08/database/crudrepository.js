@@ -2,6 +2,28 @@ const mysql = require('mysql');
 // .env
 require('dotenv').config();
 
+const idSchema = {
+  type: 'number',
+  minimum: -180,
+  maximum: 180,
+};
+
+const locationSchema = {
+  type: 'object',
+  properties: {
+    latitude: {
+      minimum: -180,
+      maximum: 180,
+    },
+    longtitude: {
+      minimum: -180,
+      maximum: 180,
+    },
+  },
+};
+
+const Validator = require('jsonschema').Validator;
+
 const dbDetails = process.env;
 const connection = mysql.createConnection({
   host: dbDetails.DB_HOST,
@@ -38,17 +60,28 @@ let connectionFunctions = {
   },
 
   save: (coordinatesArr) => {
+    const location = {
+      latitude: coordinatesArr[0],
+      longtitude: coordinatesArr[1],
+    };
+
     function f(resolve, reject) {
+      const validator = new Validator();
+      const validation = validator.validate(location, locationSchema);
+      if (validation.errors.length > 0) {
+        console.log(validation.errors);
+      }
       let sql = `insert into locations set latitude = ?, longtitude = ?`;
-      connection.query(sql, [...coordinatesArr], (err, location) => {
+      // to use location object in connection query
+      connection.query(sql, [...coordinatesArr], (err, result) => {
         console.log('\n' + 'Add a location' + '\n');
         console.log(
-          `Added record: Latitude: ${coordinatesArr[0]} Longtitude: ${coordinatesArr[1]} `
+          `Added record: Latitude: ${location.latitude} Longtitude: ${location.longtitude} `
         );
         if (err) {
           reject(err);
         }
-        resolve(location);
+        resolve(result);
       });
     }
     let p = new Promise(f);
@@ -75,6 +108,11 @@ let connectionFunctions = {
     return p;
   },
   findById: (id) => {
+    const validator = new Validator();
+    const validation = validator.validate(id, idSchema);
+    if (validation.errors.length > 0) {
+      console.log(validation.errors);
+    }
     let sql = `select * from locations where id = ? `;
     function f(resolve, reject) {
       connection.query(sql, [id], (err, location) => {
@@ -93,6 +131,11 @@ let connectionFunctions = {
     return p;
   },
   deleteById: (id) => {
+    const validator = new Validator();
+    const validation = validator.validate(id, idSchema);
+    if (validation.errors.length > 0) {
+      console.log(validation.errors);
+    }
     let sql = `delete from locations where id = ? `;
     function f(resolve, reject) {
       console.log('\n' + 'Delete a record' + '\n');
