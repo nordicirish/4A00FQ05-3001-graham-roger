@@ -1,6 +1,7 @@
 const mysql = require('mysql');
 // .env
 require('dotenv').config();
+const Validator = require('jsonschema').Validator;
 
 const idSchema = {
   type: 'number',
@@ -21,8 +22,6 @@ const locationSchema = {
     },
   },
 };
-
-const Validator = require('jsonschema').Validator;
 
 const dbDetails = process.env;
 const connection = mysql.createConnection({
@@ -48,11 +47,11 @@ let connectionFunctions = {
   },
   close: () => {
     function f(resolve, reject) {
-      connection.end((err, close) => {
+      connection.end((err, closeCon) => {
         if (err) {
           reject(err);
         }
-        resolve(close);
+        resolve(closeCon);
       });
     }
     let p = new Promise(f);
@@ -60,12 +59,11 @@ let connectionFunctions = {
   },
 
   save: (coordinatesArr) => {
-    const location = {
-      latitude: coordinatesArr[0],
-      longtitude: coordinatesArr[1],
-    };
-
     function f(resolve, reject) {
+      const location = {
+        latitude: coordinatesArr[0],
+        longtitude: coordinatesArr[1],
+      };
       const validator = new Validator();
       const validation = validator.validate(location, locationSchema);
       if (validation.errors.length > 0) {
@@ -74,10 +72,9 @@ let connectionFunctions = {
       let sql = `insert into locations set latitude = ?, longtitude = ?`;
       // to use location object in connection query
       connection.query(sql, [...coordinatesArr], (err, result) => {
+        result = `Added record: Latitude: ${location.latitude} Longtitude: ${location.longtitude} `;
         console.log('\n' + 'Add a location' + '\n');
-        console.log(
-          `Added record: Latitude: ${location.latitude} Longtitude: ${location.longtitude} `
-        );
+
         if (err) {
           reject(err);
         }
@@ -91,7 +88,7 @@ let connectionFunctions = {
   findAll: () => {
     function f(resolve, reject) {
       connection.query(`select * from locations`, (err, locations) => {
-        console.log('\n' + 'Add location' + '\n');
+        console.log('\n' + 'All locations' + '\n');
         locations.forEach((location) =>
           console.log(
             // results
@@ -116,15 +113,13 @@ let connectionFunctions = {
     let sql = `select * from locations where id = ? `;
     function f(resolve, reject) {
       connection.query(sql, [id], (err, location) => {
-        console.log('\n' + 'Find record' + '\n');
-        console.log(
-          `Record found: ID:  ${location[0].id} Latitude: ${location[0].latitude} Longtitude: ${location[0].longtitude}`
-        );
         if (err) {
           reject(err);
         }
-
-        resolve(location);
+        console.log('\n' + 'Find record' + '\n');
+        resolve(
+          `Record found: ID:  ${location[0].id} Latitude: ${location[0].latitude} Longtitude: ${location[0].longtitude}`
+        );
       });
     }
     let p = new Promise(f);
@@ -139,12 +134,12 @@ let connectionFunctions = {
     let sql = `delete from locations where id = ? `;
     function f(resolve, reject) {
       console.log('\n' + 'Delete a record' + '\n');
+      // todo need to get sql to confirm record exists before trying to delete
       connection.query(sql, [id], (err, result) => {
-        console.log(`Record: ${id} deleted`);
+        result = `Record: ${id} deleted`;
         if (err) {
           reject(err);
         }
-
         resolve(result);
       });
     }
