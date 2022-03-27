@@ -1,13 +1,18 @@
 const express = require("express");
 const locations = express.Router();
+//middleware to parse Json
+locations.use(express.json());
+id = 0;
 let database = [
-  { id: 1, latitude: 60, longitude: 60 },
-  { id: 2, latitude: 40, longitude: 80 },
+  { id: ++id, latitude: 60, longitude: 60 },
+  { id: ++id, latitude: 40, longitude: 80 },
+  { id: ++id, latitude: 40, longitude: 80 },
 ];
 
 locations.get("/", (req, res) => {
   res.send({ "Getting All locations": database });
 });
+
 // number entered at the end of url is stored as a variable id
 // ([0-9]+) Regex to check number is 0-9 can be chained for bigger numbers
 locations.get("/:id([0-9]+)", (req, res) => {
@@ -25,9 +30,11 @@ locations.get("/:id([0-9]+)", (req, res) => {
 
 locations.post("/", (req, res) => {
   let newLocation = req.body;
+  newLocation.id = ++id;
+
   database.push(newLocation);
   res.send("Adding new location");
-  //   res.status(202).end();
+  //   res.status(201).end();
 });
 
 locations.delete("/:id([0-9]+)", (req, res) => {
