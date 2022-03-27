@@ -1,1 +1,6 @@
-get http://localhost:3000/location
+get http://localhost:8080/locations
+
+
+# get http://localhost:8080/locations/2
+
+# use cygwin for curl commands 
