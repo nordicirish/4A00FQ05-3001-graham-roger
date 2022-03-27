@@ -1,8 +1,8 @@
-# get http://localhost:8080/locations
+get http://localhost:8080/locations
 
 
 # get http://localhost:8080/locations/2
 
-DELETE http://localhost:8080/locations/1
+# DELETE http://localhost:8080/locations/1
 
 # use cygwin for curl commands 

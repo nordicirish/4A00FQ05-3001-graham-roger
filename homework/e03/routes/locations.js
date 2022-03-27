@@ -1,5 +1,8 @@
 const express = require("express");
 const locations = express.Router();
+const locationSchema = require("../location-schema.json");
+const validate = require("../my-validator.js");
+
 //middleware to parse Json
 locations.use(express.json());
 id = 0;
@@ -15,6 +18,7 @@ locations.get("/", (req, res) => {
 
 // number entered at the end of url is stored as a variable id
 // ([0-9]+) Regex to check number is 0-9 can be chained for bigger numbers
+
 locations.get("/:id([0-9]+)", (req, res) => {
   id = req.params.id;
   // use array find method to search database
@@ -30,11 +34,17 @@ locations.get("/:id([0-9]+)", (req, res) => {
 
 locations.post("/", (req, res) => {
   let newLocation = req.body;
-  newLocation.id = ++id;
-
-  database.push(newLocation);
-  res.send("Adding new location");
-  //   res.status(201).end();
+  let validation = validate(newLocation, locationSchema);
+  if (!validation.success) {
+    //400 (Bad Request)
+    res.status(400);
+    res.send(validation.errors);
+  } else {
+    newLocation.id = ++id;
+    database.push(newLocation);
+    res.send("Adding new location");
+    res.status(201).end();
+  }
 });
 
 locations.delete("/:id([0-9]+)", (req, res) => {
@@ -44,7 +54,7 @@ locations.delete("/:id([0-9]+)", (req, res) => {
   if (newDb.length !== database.length) {
     database = newDb;
     res.send("Delete location with id " + id);
-    // res.status(204).end();
+    res.status(204).end();
   } else {
     res.status(404).end();
   }

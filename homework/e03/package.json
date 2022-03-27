@@ -61,6 +61,7 @@
     "js-yaml": "^4.1.0",
     "json-schema-traverse": "^0.4.1",
     "json-stable-stringify-without-jsonify": "^1.0.1",
+    "jsonschema": "^1.4.0",
     "levn": "^0.4.1",
     "lodash.merge": "^4.6.2",
     "minimatch": "^3.1.2",
