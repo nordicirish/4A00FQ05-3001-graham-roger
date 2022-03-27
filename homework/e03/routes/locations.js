@@ -13,7 +13,19 @@ let database = [
 ];
 
 locations.get("/", (req, res) => {
-  res.send({ "Getting All locations": database });
+  // https://www.geeksforgeeks.org/check-if-an-array-is-empty-or-not-in-javascript
+  if (
+    typeof database != "undefined" &&
+    database != null &&
+    database.length != null &&
+    database.length > 0
+  ) {
+    res.send({ "Getting All locations": database });
+    res.status(200).end();
+  } else {
+    //   res.status(404).end() maybe?;
+    res.status(500).end;
+  }
 });
 
 // number entered at the end of url is stored as a variable id
@@ -25,8 +37,9 @@ locations.get("/:id([0-9]+)", (req, res) => {
   // Number(id) as id is converted from a string
   const found = database.find((location) => location.id === Number(id));
   if (found) {
-    res.send("Getting location with id " + id);
-    // res.send(found);
+    // res.send("Getting location with id " + id);
+    res.send(found);
+    res.status(200).end();
   } else {
     res.status(404).end();
   }
@@ -42,7 +55,7 @@ locations.post("/", (req, res) => {
   } else {
     newLocation.id = ++id;
     database.push(newLocation);
-    res.send("Adding new location");
+    res.send(newLocation);
     res.status(201).end();
   }
 });
@@ -53,7 +66,7 @@ locations.delete("/:id([0-9]+)", (req, res) => {
   newDb = database.filter((location) => location.id !== Number(id));
   if (newDb.length !== database.length) {
     database = newDb;
-    res.send("Delete location with id " + id);
+    res.send();
     res.status(204).end();
   } else {
     res.status(404).end();
