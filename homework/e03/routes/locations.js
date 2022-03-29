@@ -2,9 +2,9 @@ const express = require("express");
 const locations = express.Router();
 const locationSchema = require("../location-schema.json");
 const validate = require("../my-validator.js");
-
-//middleware to parse Json
+// middleware to parse Json in requests
 locations.use(express.json());
+locations.use("/location", locations);
 id = 0;
 let database = [
   { id: ++id, latitude: 60, longitude: 60 },
@@ -36,6 +36,7 @@ locations.get("/:id([0-9]+)", (req, res) => {
   // use array find method to search database
   // Number(id) as id is converted from a string
   const found = database.find((location) => location.id === Number(id));
+
   if (found) {
     // res.send("Getting location with id " + id);
     res.send(found);
@@ -53,9 +54,12 @@ locations.post("/", (req, res) => {
     res.status(400);
     res.send(validation.errors);
   } else {
+    //test works in cygwin
+    // curl -H "Content-type: application/json" -d "{\"latitude\": 60, \"longitude\": 60}" http://localhost:8080/locations
     newLocation.id = ++id;
     database.push(newLocation);
     res.send(newLocation);
+    //201 Created new resource
     res.status(201).end();
   }
 });
@@ -63,16 +67,86 @@ locations.post("/", (req, res) => {
 locations.delete("/:id([0-9]+)", (req, res) => {
   id = req.params.id;
   // use array filter to make a copy of the database without the location specified
-  newDb = database.filter((location) => location.id !== Number(id));
+  const newDb = database.filter((location) => location.id !== Number(id));
   if (newDb.length !== database.length) {
     database = newDb;
     res.send();
-    res.status(204).end();
+    //200 Ok
+    res.status(200).end();
   } else {
     res.status(404).end();
   }
 });
 
-locations.use("/location", locations);
+locations.put("/:id([0-9]+)", (req, res) => {
+  id = req.params.id;
+  let updateLocation = req.body;
+  let validation = validate(updateLocation, locationSchema);
+  if (!validation.success) {
+    // 400 (Bad Request)
+    res.status(400);
+    res.send(validation.errors);
+  } else {
+    const found = database.find((location) => location.id === Number(id));
+    const foundIndex = database.indexOf(found);
+    if (found) {
+      database.splice(foundIndex, 1, {
+        id: found.id,
+        latitude: updateLocation.latitude,
+        longitude: updateLocation.longitude,
+      });
+      res.send(database[foundIndex]);
+      // 200 ok
+      res.status(200).end();
+    } else {
+      res.status(404).end();
+    }
+  }
+});
+
+locations.patch("/:id([0-9]+)", (req, res) => {
+  id = req.params.id;
+  let updateLocation = req.body;
+  let validation = validate(updateLocation, locationSchema);
+  if (!validation.success) {
+    // 400 (Bad Request)
+    res.status(400);
+    res.send(validation.errors);
+  } else {
+    const found = database.find((location) => location.id === Number(id));
+    const foundIndex = database.indexOf(found);
+    if (found) {
+      if (
+        updateLocation.latitude !== found.latitude &&
+        updateLocation.longitude === found.longitude
+      ) {
+        database.splice(foundIndex, 1, {
+          id: found.id,
+          latitude: updateLocation.latitude,
+          longitude: found.longitude,
+        });
+      } else if (
+        updateLocation.latitude === found.latitude &&
+        updateLocation.longitude !== found.longitude
+      ) {
+        database.splice(foundIndex, 1, {
+          id: found.id,
+          latitude: found.latitude,
+          longitude: updateLocation.longitude,
+        });
+      } else {
+        database.splice(foundIndex, 1, {
+          id: found.id,
+          latitude: updateLocation.latitude,
+          longitude: updateLocation.longitude,
+        });
+      }
+      res.send(database[foundIndex]);
+      res.status(200).end();
+    } else {
+      res.status(404).end();
+    }
+  }
+});
 
 module.exports = locations;

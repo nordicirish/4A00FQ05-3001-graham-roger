@@ -1,8 +1,37 @@
-get http://localhost:8080/locations
-
+#  get http://localhost:8080/locations
 
 # get http://localhost:8080/locations/2
 
 # DELETE http://localhost:8080/locations/1
 
-# use cygwin for curl commands 
+# # post works in cygwin 
+# curl -H "Content-type: application/json" -d "{\"latitude\": 60, \"longitude\": 60}" http://localhost:8080/locations
+
+
+# PUT http://127.0.0.1:8080/locations/2
+# content-type: application/json 
+
+# {
+#    "latitude\": 60,
+#     "longitude\": 60
+# }
+
+# 
+# curl -H "Content-type: application/json" -X PATCH -d  "{ "op": "replace", "path": "\latitude\", "value": 22}" http://localhost:8080/locations/2
+
+
+PUT  http://127.0.0.1:8080/locations/1
+
+Content-Type: application/json
+{
+    "latitude": 20,
+    "longitude": 40
+}
+
+PATCH  http://127.0.0.1:8080/locations/2
+Content-Type: application/json
+
+{
+    "latitude": 70,
+    "longitude": 80
+}
