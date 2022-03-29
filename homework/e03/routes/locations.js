@@ -54,8 +54,6 @@ locations.post("/", (req, res) => {
     res.status(400);
     res.send(validation.errors);
   } else {
-    //test works in cygwin
-    // curl -H "Content-type: application/json" -d "{\"latitude\": 60, \"longitude\": 60}" http://localhost:8080/locations
     newLocation.id = ++id;
     database.push(newLocation);
     res.send(newLocation);
@@ -90,14 +88,23 @@ locations.put("/:id([0-9]+)", (req, res) => {
     const found = database.find((location) => location.id === Number(id));
     const foundIndex = database.indexOf(found);
     if (found) {
-      database.splice(foundIndex, 1, {
-        id: found.id,
-        latitude: updateLocation.latitude,
-        longitude: updateLocation.longitude,
-      });
-      res.send(database[foundIndex]);
-      // 200 ok
-      res.status(200).end();
+      if (
+        updateLocation.latitude == found.latitude &&
+        updateLocation.longitude == found.longitude
+      ) {
+        res.send(
+          "No updates made as values entered are identical to existing values"
+        );
+        res.status(204).end;
+      } else {
+        database.splice(foundIndex, 1, {
+          id: found.id,
+          latitude: updateLocation.latitude,
+          longitude: updateLocation.longitude,
+        });
+        res.send(database[foundIndex]);
+        res.status(200).end();
+      }
     } else {
       res.status(404).end();
     }
@@ -118,15 +125,17 @@ locations.patch("/:id([0-9]+)", (req, res) => {
     if (found) {
       if (
         updateLocation.latitude !== found.latitude &&
-        updateLocation.longitude === found.longitude
+        updateLocation.longitude == found.longitude
       ) {
         database.splice(foundIndex, 1, {
           id: found.id,
           latitude: updateLocation.latitude,
           longitude: found.longitude,
         });
+        res.send(database[foundIndex]);
+        res.status(200).end();
       } else if (
-        updateLocation.latitude === found.latitude &&
+        updateLocation.latitude == found.latitude &&
         updateLocation.longitude !== found.longitude
       ) {
         database.splice(foundIndex, 1, {
@@ -134,15 +143,25 @@ locations.patch("/:id([0-9]+)", (req, res) => {
           latitude: found.latitude,
           longitude: updateLocation.longitude,
         });
+        res.send(database[foundIndex]);
+        res.status(200).end();
+      } else if (
+        updateLocation.latitude == found.latitude &&
+        updateLocation.longitude == found.longitude
+      ) {
+        res.send(
+          "No updates made as values entered are identical to existing values"
+        );
+        res.status(204).end;
       } else {
         database.splice(foundIndex, 1, {
           id: found.id,
           latitude: updateLocation.latitude,
           longitude: updateLocation.longitude,
         });
+        res.send(database[foundIndex]);
+        res.status(200).end();
       }
-      res.send(database[foundIndex]);
-      res.status(200).end();
     } else {
       res.status(404).end();
     }
