@@ -1,0 +1,17 @@
+# http://localhost:8080/locations/all
+
+# http://localhost:8080/locations/15
+# http://localhost:8080/locations/delete/141
+
+# POST  http://127.0.0.1:8080/locations/add
+# Content-Type: application/json
+
+# {
+#     "latitude": 180,
+#     "longitude": 80
+# }
+
+# http://localhost:8080/filter?lat1=2&lat2=60
+
+# http://localhost:8080/locations/sort-by-latitude
+http://localhost:8080/locations/sort-by-longitude
