@@ -1,43 +1,36 @@
-const mysql = require("mysql");
 // .env
 require("dotenv").config();
-
+const mysql = require("mysql");
 const locationSchema = require("../location-schema.js");
+const rangeSchema = require("../range-schema.js");
 const validate = require("../my-validator.js");
 const dbconfig = require("./dbconfig");
-
 const connection = mysql.createConnection(dbconfig);
 
 let connectionFunctions = {
   connect: () => {
-    function f(resolve, reject) {
+    return new Promise((resolve, reject) => {
       connection.connect((err, open) => {
         if (err) {
           reject(err);
         }
         resolve(open);
       });
-    }
-    let p = new Promise(f);
-    return p;
+    });
   },
   close: () => {
-    function f(resolve, reject) {
+    return new Promise((resolve, reject) => {
       connection.end((err, closeCon) => {
         if (err) {
           reject(err);
         }
         resolve(closeCon);
       });
-    }
-    let p = new Promise(f);
-    return p;
+    });
   },
 
   save: (location) => {
     return new Promise((resolve, reject) => {
-      // const validator = new Validator();
-      // const validation = validator.validate(location, locationSchema);
       let validation = validate(location, locationSchema);
       if (validation.errors.length > 0) {
         reject(validation.errors);
@@ -89,19 +82,29 @@ let connectionFunctions = {
     });
   },
 
-  filterByLat: (locationRange) => {
-    console.log(locationRange);
-    let sql = `SELECT * FROM locations WHERE latitude BETWEEN ? AND ?`;
+  filterByLat: (latitudeRange) => {
     return new Promise((resolve, reject) => {
-      connection.query(sql, locationRange, (err, result) => {
-        //* @author Tanja Rannikko
-        // @author Jussi Pohjolainen
-        if (err) reject(err);
-        else if (result.length === 0) resolve(null);
-        else resolve(result);
-      });
+      let validation = validate(latitudeRange, rangeSchema);
+      if (validation.errors.length > 0) {
+        reject(validation.errors);
+        console.log(validation.errors);
+      } else {
+        let sql = `SELECT * FROM locations WHERE latitude BETWEEN ? AND ?`;
+        connection.query(
+          sql,
+          [latitudeRange.lower, latitudeRange.upper],
+          (err, result) => {
+            //* @author Tanja Rannikko
+            // @author Jussi Pohjolainen
+            if (err) reject(err);
+            else if (result.length === 0) resolve(null);
+            else resolve(result);
+          }
+        );
+      }
     });
   },
+
   sortByLat: () => {
     return new Promise((resolve, reject) => {
       connection.query(
@@ -115,6 +118,7 @@ let connectionFunctions = {
       );
     });
   },
+
   sortByLong: () => {
     return new Promise((resolve, reject) => {
       connection.query(
@@ -129,4 +133,5 @@ let connectionFunctions = {
     });
   },
 };
+
 module.exports = connectionFunctions;

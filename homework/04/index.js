@@ -1,7 +1,7 @@
 const express = require("express");
 const database = require("./database/crudrepository.js");
 const app = express();
-app.use(express.json());
+// app.use(express.json());
 
 app.get("/locations/all", async (req, res) => {
   try {
@@ -27,10 +27,13 @@ app.get("/locations/:id([0-9]+)", async (req, res) => {
 });
 
 app.get("/filter?", async (req, res) => {
-  let locationRange = [req.query.lat1, req.query.lat2];
-  console.log(locationRange);
+  let latitudeRange = {
+    lower: Number(req.query.lat1),
+    upper: Number(req.query.lat2),
+  };
+  console.log(latitudeRange);
   try {
-    let result = await database.filterByLat(locationRange);
+    let result = await database.filterByLat(latitudeRange);
     if (!result) {
       // status won't change without a send message???
       res.status(404).send("no locations found").end;
